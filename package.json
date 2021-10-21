@@ -1,0 +1,19 @@
+{
+  "name": "gc_meet_sockets",
+  "version": "1.0.0",
+  "description": "servidor https con node, express y sockets",
+  "main": "server/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "GCG",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.23.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "fs": "0.0.1-security",
+    "https": "^1.0.0",
+    "socket.io": "^4.3.0"
+  }
+}
