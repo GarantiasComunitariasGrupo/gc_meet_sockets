@@ -76,6 +76,7 @@ io.on('connection', (socket) => {
         const user = listado.findIndex((row) => row.id === idSocket);
 
         if (user !== -1) {
+            salaEspera.setDisconnect(listado[user]);
             io.in(room).emit('userStatus', { usuario: listado[user].usuario, state: false });
             listado.splice(user, 1);
         }

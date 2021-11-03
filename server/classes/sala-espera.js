@@ -64,6 +64,17 @@ class SalaEspera
         
     }
 
+    setDisconnect = (usuario) => {
+
+        axios.post('http://192.168.2.85:8800/api/acceso-reunion/actualizar-acceso-reunion', usuario.dataConvocado)
+        .then((response) => {
+            if (response.status === 200) {
+                console.log(response.data);
+            }
+        }).catch((error) => console.log('error', error));
+
+    }
+
 }
 
 module.exports = { SalaEspera }
