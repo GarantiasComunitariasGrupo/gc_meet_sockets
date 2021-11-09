@@ -1,5 +1,5 @@
 const { io } = require('../server');
-const { SalaEspera } = require('../classes/sala-espera');
+const { SalaEspera } = require('../classes/sala-espera_');
 
 /**
  * Instacia de clase
