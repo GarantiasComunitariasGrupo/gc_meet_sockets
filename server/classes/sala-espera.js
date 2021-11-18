@@ -40,6 +40,16 @@ class SalaEspera
      */
     getListaUsuarios = () => this.listaSalaEspera;
 
+    /**
+     * Función encargada de sacar un usuario de la sala
+     * 
+     * @param {} tipo 
+     * @param {*} valor 
+     */
+    sacarUsuarioSala = (tipo, valor) => {
+        this.listaSalaEspera = this.listaSalaEspera.filter((row) => row[tipo] != valor);
+    }
+
 }
 
 module.exports = { SalaEspera }

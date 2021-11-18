@@ -24,6 +24,8 @@ io.on('connection', (socket) => {
         salaEspera.addUserRoom(data, socket.id);
     });
 
+    socket.on('disconnect', () => salaEspera.sacarUsuarioSala('socketId', socket.id));
+
     /**
      * Recibe url_firma para emitirla al frontend
      */
@@ -46,6 +48,9 @@ io.on('connection', (socket) => {
                 'response' : (user) ? user : 'No se encontró usuario'
             });
 
+            salaEspera.sacarUsuarioSala('id_convocado_reunion', req.query.id_convocado_reunion);
+            
+            socket.disconnect();
         }
     });
 
