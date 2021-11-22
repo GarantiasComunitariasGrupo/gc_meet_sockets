@@ -52,9 +52,8 @@ app.use(cors());
  */
 module.exports = { io, app }
 
-// require('./sockets/sockets');
-
 require('./sockets/socket-sala-espera');
+require('./sockets/socket-reunion');
 
 server.listen(process.env.PORT, (err) => {
 	(err) ? console.log(`Error ${err}`) : null;
