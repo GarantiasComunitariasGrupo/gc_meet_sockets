@@ -49,8 +49,7 @@ io.on('connection', (socket) => {
             });
 
             salaEspera.sacarUsuarioSala('id_convocado_reunion', req.query.id_convocado_reunion);
-            
-            socket.disconnect();
+           
         }
     });
 
