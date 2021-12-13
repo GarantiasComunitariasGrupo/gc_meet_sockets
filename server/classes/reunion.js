@@ -6,12 +6,13 @@ class Reunion
     listaAdministradores = [];
     urlAPI = 'http://192.168.2.85:8800/api';
 
-    agregarLista = (tipo, data) => {
+    agregarLista = (tipo, data, callback) => {
         if (this[tipo]) {
             const user = this[tipo].find((row) => row.id_convocado_reunion == data.id_convocado_reunion);
             if (!user) {
                 this[tipo].push(data);
             } else {
+                callback(user.socketId);
                 user.socketId = data.socketId;
             }
         }
@@ -26,6 +27,22 @@ class Reunion
 
     storeUser = (data) => {
         axios.post(`${this.urlAPI}/acceso-reunion/guardar-acceso-reunion`, data)
+        .then((response) => {
+            if (response.status === 200) {
+                console.log(response.data);
+            }
+        }).catch((error) => console.log('error', error));
+    }
+
+    buscarUsuario = (tipo, campo, value) => {
+        if (this[tipo]) {
+            const user = this[tipo].find((row) => row[campo] == value);
+            return (user) ? user : false;
+        }
+    }
+
+    guardarDesconexion = (usuario) => {
+        axios.post(`${this.urlAPI}/acceso-reunion/actualizar-acceso-reunion`, usuario)
         .then((response) => {
             if (response.status === 200) {
                 console.log(response.data);
