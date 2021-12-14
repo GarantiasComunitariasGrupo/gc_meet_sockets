@@ -50,6 +50,15 @@ class Reunion
         }).catch((error) => console.log('error', error));
     }
 
+    getResultadosPrograma = (id_programa, callback) => {
+        axios.get(`${this.urlAPI}/acceso-reunion/get-resultados-votacion/${id_programa}`)
+        .then((response) => {
+            if (response.status === 200) {
+                callback(response.data);
+            }
+        }).catch((error) => console.log('error', error))
+    }
+
 }
 
 module.exports = { Reunion }
