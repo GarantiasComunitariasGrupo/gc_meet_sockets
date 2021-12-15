@@ -36,37 +36,64 @@ io.on('connection', (socket) => {
     });
 
     socket.on('actualizar-votacion', (data) => {
-        if (reunion.listaAdministradores.length > 0) {
-            let datos = {};
-            const admins = reunion.listaAdministradores.map((row) => row.socketId);
-            reunion.getResultadosPrograma(data.id_programa, (response) => {
-                if (response.ok) {
-                    
-                    const valores = response.response.map((elm) => JSON.parse(elm.descripcion));
 
+        const admins = reunion.getIdSocketAdmin();
+
+        if (admins) {
+
+            reunion.getResultadosPrograma(data.id_programa, (response) => {
+
+                let datos = {};
+    
+                if (response.ok) {
+    
+                    const valores = response.response.map((elm) => JSON.parse(elm.descripcion));
+    
                     datos.total = valores.length;
                     datos.true = valores.filter((elm) => elm.votacion === 'true').length;
                     datos.false = datos.total - datos.true;
                     datos.isChild = data.isChild;
                     datos.id_programa = data.id_programa;
-
+    
                     admins.forEach((row) => io.to(row).emit('datos-votacion', datos));
                 }
-            });
-        }
+            });  
+        } 
+
     });
 
-    socket.on('disconnect', () => desconectarUsuario(socket.id));
+    socket.on('actualizar-entrada-texto', (data) => {
 
-    const desconectarUsuario = (id_socket) => {
-        const listado = reunion.getLista('listaConvocados');
-        const user = listado.findIndex((row) => row.socketId == id_socket);
+        const admins = reunion.getIdSocketAdmin();
 
-        if (user !== -1) {
-            reunion.guardarDesconexion(listado[user]);
-            io.in(room).emit('estado-usuario', { usuario: listado[user], estado: false, flag: false });
-            listado.splice(user, 1);
+        if (admins) {
+
+            reunion.getResultadosPrograma(data.id_programa, (response) => {
+
+                let datos = {};
+
+                if (response.ok) {
+
+                    const valores = response.response.map((elm) => JSON.parse(elm.descripcion));
+                    
+                    datos.total = valores.length;
+                    datos.totalConectados = reunion.listaConvocados.length;
+
+                    admins.forEach((row) => io.to(row).emit('datos-entrada-texto', datos));
+                }
+
+            });
+
         }
-    }
+
+    });
+
+    socket.on('disconnect', () => {
+        reunion.desconectarUsuario(socket.id, (user) => {
+            if (user) {
+                io.in(room).emit('estado-usuario', { usuario: user, estado: false, flag: false });
+            }
+        });
+    });
 
 });

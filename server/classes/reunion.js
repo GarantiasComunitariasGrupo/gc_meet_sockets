@@ -59,6 +59,25 @@ class Reunion
         }).catch((error) => console.log('error', error))
     }
 
+    getIdSocketAdmin = () => {
+        if (this.listaAdministradores.length > 0) {
+            return this.listaAdministradores.map((row) => row.socketId);
+        }
+    }
+
+    desconectarUsuario = (id_socket, callback) => {
+
+        const listado = this.listaConvocados;
+        const user = listado.findIndex((row) => row.socketId == id_socket);
+
+        if (user !== -1) {
+            this.guardarDesconexion(listado[user]);
+            callback(listado[user]);
+            listado.splice(user, 1);
+        }
+
+    }
+
 }
 
 module.exports = { Reunion }
