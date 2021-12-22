@@ -13,6 +13,7 @@ io.on('connection', (socket) => {
 
     socket.on('acceso-reunion', (data) => {
 
+        // console.log('tipoAccesoNode', data.tipo_convocado);
         let tipoAcceso = (data.tipo_convocado === 'Convocado') ? 'listaConvocados' : 'listaAdministradores';
         
         if (data.identificacion === '1001') {
@@ -78,6 +79,8 @@ io.on('connection', (socket) => {
                     
                     datos.total = valores.length;
                     datos.totalConectados = reunion.listaConvocados.length;
+                    datos.isChild = data.isChild;
+                    datos.id_programa = data.id_programa;
 
                     admins.forEach((row) => io.to(row).emit('datos-entrada-texto', datos));
                 }
@@ -86,6 +89,31 @@ io.on('connection', (socket) => {
 
         }
 
+    });
+
+    socket.on('emitir-seleccion-unica', (data) => {
+        const admins = reunion.getIdSocketAdmin();
+        if (admins) {
+            reunion.asignacionVotosSeleccion(data.id_programa, data.isChild, (response) => {
+                admins.forEach((row) => io.to(row).emit('datos-seleccion-unica', response));
+            });
+        }
+    });
+
+    socket.on('emitir-seleccion-multiple', (data) => {
+        const admins = reunion.getIdSocketAdmin();
+        if (admins) {
+            reunion.asignacionVotosSeleccion(data.id_programa, data.isChild, (response) => {
+                admins.forEach((row) => io.to(row).emit('datos-seleccion-multiple', response));
+            });
+        }
+    });
+
+    socket.on('get-cantidad-convocados', () => {
+        const admins = reunion.getIdSocketAdmin();
+        if (admins) {
+            admins.forEach((row) => io.to(row).emit('send-cantidad-convocados', { totalConvocados: reunion.listaConvocados.length }));
+        }
     });
 
     socket.on('disconnect', () => {
