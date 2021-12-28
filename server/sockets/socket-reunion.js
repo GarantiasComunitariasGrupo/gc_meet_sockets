@@ -68,13 +68,12 @@ io.on('connection', (socket) => {
         const admins = reunion.getIdSocketAdmin();
 
         if (admins) {
-
+            
             reunion.getResultadosPrograma(data.id_programa, (response) => {
-
+                
                 let datos = {};
 
                 if (response.ok) {
-
                     const valores = response.response.map((elm) => JSON.parse(elm.descripcion));
                     
                     datos.total = valores.length;
