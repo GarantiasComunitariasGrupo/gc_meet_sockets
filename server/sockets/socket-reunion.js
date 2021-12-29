@@ -38,6 +38,7 @@ io.on('connection', (socket) => {
 
     socket.on('actualizar-votacion', (data) => {
 
+        console.log(data);
         const admins = reunion.getIdSocketAdmin();
 
         if (admins) {
@@ -56,7 +57,13 @@ io.on('connection', (socket) => {
                     datos.isChild = data.isChild;
                     datos.id_programa = data.id_programa;
     
-                    admins.forEach((row) => io.to(row).emit('datos-votacion', datos));
+                    admins.forEach((row) => {
+                        io.to(row).emit('datos-votacion', datos);
+                        io.to(row).emit('identificacion-voto', {
+                            identificacion: data.identificacion,
+                            voto: data.voto
+                        });
+                    });
                 }
             });  
         } 
@@ -68,7 +75,7 @@ io.on('connection', (socket) => {
         const admins = reunion.getIdSocketAdmin();
 
         if (admins) {
-            
+
             reunion.getResultadosPrograma(data.id_programa, (response) => {
                 
                 let datos = {};
@@ -81,7 +88,13 @@ io.on('connection', (socket) => {
                     datos.isChild = data.isChild;
                     datos.id_programa = data.id_programa;
 
-                    admins.forEach((row) => io.to(row).emit('datos-entrada-texto', datos));
+                    admins.forEach((row) => {
+                        io.to(row).emit('datos-entrada-texto', datos);
+                        io.to(row).emit('identificacion-entrada-texto', {
+                            identificacion: data.identificacion,
+                            voto: data.voto
+                        });
+                    });
                 }
 
             });
@@ -94,7 +107,13 @@ io.on('connection', (socket) => {
         const admins = reunion.getIdSocketAdmin();
         if (admins) {
             reunion.asignacionVotosSeleccion(data.id_programa, data.isChild, (response) => {
-                admins.forEach((row) => io.to(row).emit('datos-seleccion-unica', response));
+                admins.forEach((row) => {
+                    io.to(row).emit('datos-seleccion-unica', response);
+                    io.to(row).emit('identificacion-seleccion-unica', {
+                        identificacion: data.identificacion,
+                        voto: data.voto
+                    });
+                });
             });
         }
     });
