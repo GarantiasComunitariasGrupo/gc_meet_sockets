@@ -61,7 +61,7 @@ io.on('connection', (socket) => {
                         io.to(row).emit('datos-votacion', datos);
                         io.to(row).emit('identificacion-voto', {
                             identificacion: data.identificacion,
-                            voto: data.voto
+                            voto: data.voto.votacion
                         });
                     });
                 }
@@ -122,7 +122,13 @@ io.on('connection', (socket) => {
         const admins = reunion.getIdSocketAdmin();
         if (admins) {
             reunion.asignacionVotosSeleccion(data.id_programa, data.isChild, (response) => {
-                admins.forEach((row) => io.to(row).emit('datos-seleccion-multiple', response));
+                admins.forEach((row) => {
+                    io.to(row).emit('datos-seleccion-multiple', response);
+                    io.to(row).emit('identificacion-seleccion-multiple', {
+                        identificacion: data.identificacion,
+                        voto: data.voto
+                    });
+                });
             });
         }
     });
