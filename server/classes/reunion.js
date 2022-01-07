@@ -2,10 +2,19 @@ const axios = require('axios');
 
 class Reunion
 {
+    /** Array para almacenar convocados de la reunión */
     listaConvocados = [];
+    /** Array para almcenar administradores de la reunión */
     listaAdministradores = [];
+    /** Endpoint backend laravel */
     urlAPI = 'http://192.168.2.85:8800/api';
 
+    /**
+     * Función encargada de añadir un concovado/administrador a su respectivo array
+     * 
+     * @param tipo => listaConvocados|listaAdministradores
+     * @param data => info del usuario
+     */
     agregarLista = (tipo, data, callback) => {
         if (this[tipo]) {
             const user = this[tipo].find((row) => row.id_convocado_reunion == data.id_convocado_reunion);
