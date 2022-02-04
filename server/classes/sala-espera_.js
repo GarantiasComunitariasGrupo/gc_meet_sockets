@@ -55,7 +55,7 @@ class SalaEspera
      */
     storeUser = (data) => {
 
-        axios.post('http://192.168.2.85:8800/api/acceso-reunion/guardar-acceso-reunion', data)
+        axios.post(process.env.API + '/acceso-reunion/guardar-acceso-reunion', data)
         .then((response) => {
             if (response.status === 200) {
                 console.log(response.data);
@@ -66,7 +66,7 @@ class SalaEspera
 
     setDisconnect = (usuario) => {
 
-        axios.post('http://192.168.2.85:8800/api/acceso-reunion/actualizar-acceso-reunion', usuario.dataConvocado)
+        axios.post(process.env.API + '/acceso-reunion/actualizar-acceso-reunion', usuario.dataConvocado)
         .then((response) => {
             if (response.status === 200) {
                 console.log(response.data);

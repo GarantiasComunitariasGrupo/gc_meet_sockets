@@ -8,7 +8,7 @@ const io = require("socket.io")();
 /**
  * Se define entorno de desarrollo local
  */
-process.env.NODE_ENV = process.env.NODE_ENV || 'dev';
+process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
 /**
  * Se define puerto para entorno local
@@ -20,9 +20,9 @@ const options = {};
 /**
  * Certificados para entorno local
  */
-if (process.env.NODE_ENV === 'dev') {
-	options.cert = fs.readFileSync('C:\\xampp\\htdocs\\repotencia\\gcrepotencia\\chat_repotencia\\config\\keys\\certificado.crt');
-    options.key = fs.readFileSync('C:\\xampp\\htdocs\\repotencia\\gcrepotencia\\chat_repotencia\\config\\keys\\llave.key');
+if (process.env.NODE_ENV === 'development') {
+	options.cert = fs.readFileSync('C:\\wamp64\\bin\\apache\\apache2.4.41\\conf\\key\\certificate.crt');
+	options.key = fs.readFileSync('C:\\wamp64\\bin\\apache\\apache2.4.41\\conf\\key\\private.key');
 }
 
 /**
@@ -57,5 +57,5 @@ require('./sockets/socket-reunion');
 
 server.listen(process.env.PORT, (err) => {
 	(err) ? console.log(`Error ${err}`) : null;
-    console.log(`Aplicación corriendo por el puerto ${process.env.PORT}`);
+	console.log(`Aplicación corriendo por el puerto ${process.env.PORT}`);
 });
