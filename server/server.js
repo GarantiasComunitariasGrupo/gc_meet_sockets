@@ -24,8 +24,8 @@ if (process.env.NODE_ENV === 'development') {
 	options.cert = fs.readFileSync('C:\\wamp64\\bin\\apache\\apache2.4.41\\conf\\key\\certificate.crt');
 	options.key = fs.readFileSync('C:\\wamp64\\bin\\apache\\apache2.4.41\\conf\\key\\private.key');
 } else if (process.env.NODE_ENV === 'aospina') {
-	options.cert = fs.readFileSync('C:\\wamp64\\bin\\apache\\apache2.4.46\\conf\\key\\certificate.crt');
-	options.key = fs.readFileSync('C:\\wamp64\\bin\\apache\\apache2.4.46\\conf\\key\\private.key');
+	options.cert = fs.readFileSync('C:\\wamp64\\bin\\apache\\apache2.4.51\\conf\\key\\certificate.crt');
+	options.key = fs.readFileSync('C:\\wamp64\\bin\\apache\\apache2.4.51\\conf\\key\\private.key');
 }
 
 /**

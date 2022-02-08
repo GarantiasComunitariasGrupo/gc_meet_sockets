@@ -7,7 +7,7 @@ class Reunion
     /** Array para almcenar administradores de la reunión */
     listaAdministradores = [];
     /** Endpoint backend laravel */
-    urlAPI = process.env.API || 'http://192.168.0.9:8802/api';
+    urlAPI = process.env.API || 'http://192.168.2.106:8802/api';
 
     /**
      * Función encargada de añadir un concovado/administrador a su respectivo array
