@@ -1,9 +1,28 @@
 const { io, app } = require('../server');
-const { Reunion } = require('../classes/reunion');
+const { Reuniones } = require('../classes/reunion');
 
-const reunion = new Reunion();
+// @ts-check
 
-const room = 'reunion-gc';
+/** @typedef {'Administrador' | 'Convocado'} MeetingType */
+
+/** 
+ * @template T
+ * @typedef {Object} Meeting
+ * @property {T extends 'Convocado' ? number : never} id_convocado_reunion
+ * @property {T extends 'Convocado' ? string : never} identificacion
+ * @property {T extends 'Convocado' ? number[] : never} convocatoria
+ * @property {T extends 'Administrador' ? string : never} id_usuario
+ * @property {?number} id_reunion
+ * @property {number} expiration
+ */
+
+const reuniones = new Reuniones();
+
+const room = 'reuniones';
+
+function error(error) {
+    console.log(error);
+}
 
 io.on('connection', (socket) => {
 
@@ -11,176 +30,37 @@ io.on('connection', (socket) => {
 
     socket.join(room);
 
-    /** Socket que escucha cuando un convocado accedió a la sala de reunión */
-    socket.on('acceso-reunion', (data) => {
-
-        /** Se obtiene tipo de convocado para saber en cuál array guardar */
-        let tipoAcceso = (data.tipo_convocado === 'Convocado') ? 'listaConvocados' : 'listaAdministradores';
-        
-        if (data.identificacion === '1001') {
-            tipoAcceso = 'listaAdministradores';
-        }
-
-        /** Se añade convocado a la sala de reunión */
-        reunion.agregarLista(tipoAcceso, { ...data, socketId: socket.id }, (socketId) => {
-            if (socketId) {
-                /** Si un convocado tiene varias pestañas de la reunión abiertas */
-                io.to(socketId).emit('sacar-usuario', { socket: socketId });
-            }
-        });
-
-        /** Se guarda acceso del convocado en BD */
-        reunion.storeUser(data);
-
-        /** Se emite a todos los usuarios de la sala el estado del convocado conectado */
-        io.in(room).emit('estado-usuario', { usuario: data, estado: true, flag: true });
-
-        /** Se emite a todos los usuarios de la sala la lista de convocados conectados */
-        io.in(room).emit('lista-usuarios', reunion.getLista(tipoAcceso).map((row) => row.identificacion).filter((row) => row !== data.identificacion));
+    socket.on('register', (meetingId) => {
+        console.log(34, meetingId);
+        if (!meetingId) { return error('El id de la reunión no es válido'); }
+        const meet = reuniones.add(meetingId);
+        console.log(37, meet);
+        if (!meet.status) { return error(meet.message); }
+        // socket.emit('register-emit', meet.message); // No se a quien emitirle
     });
 
-    /** Socket que escucha cuando se avanzó al siguiente programa en la reunión */
-    socket.on('avanzar-programa', (data) => {
-        io.in(room).emit('avance', { canAdvance: true });
-    });
-
-    /** Socket que escucha cuando un convocado registró una respuesta para un programa con tipo: VOTACIÓN */
-    socket.on('actualizar-votacion', (data) => {
-
-        /** Se obtiene un array con los socket.id de los administradores de la reunión */
-        const admins = reunion.getIdSocketAdmin();
-
-        if (admins) {
-
-            reunion.getResultadosPrograma(data.id_programa, (response) => {
-
-                let datos = {};
-    
-                if (response.ok) {
-    
-                    const valores = response.response.map((elm) => JSON.parse(elm.descripcion));
-    
-                    /** Se construye objeto para generar las estadísticas del programa en cuestión */
-                    datos.total = valores.length;
-                    datos.true = valores.filter((elm) => elm.votacion === 'true').length;
-                    datos.false = datos.total - datos.true;
-                    datos.isChild = data.isChild;
-                    datos.id_programa = data.id_programa;
-    
-                    /** Se iteran los socket.id de los administradores para emitirles la siguiente información */
-                    admins.forEach((row) => {
-                        /** Se emiten las estadísticas del programa actual */
-                        io.to(row).emit('datos-votacion', datos);
-                        /** Se emite el voto registrado por un convocado específico */
-                        io.to(row).emit('identificacion-voto', {
-                            identificacion: data.identificacion,
-                            voto: data.voto.votacion
-                        });
-                    });
-                }
-            });  
-        } 
-
-    });
-
-    /** Socket que escucha cuando un convocado registró una respuesta para un programa con tipo: ENTRADA DE TEXTO */
-    socket.on('actualizar-entrada-texto', (data) => {
-
-        /** Se obtiene un array con los socket.id de los administradores de la reunión */
-        const admins = reunion.getIdSocketAdmin();
-
-        if (admins) {
-
-            reunion.getResultadosPrograma(data.id_programa, (response) => {
-                
-                let datos = {};
-
-                if (response.ok) {
-                    const valores = response.response.map((elm) => JSON.parse(elm.descripcion));
-                    
-                    /** Se construye objeto para generar las estadísticas del programa en cuestión */
-                    datos.total = valores.length;
-                    datos.totalConectados = reunion.listaConvocados.length;
-                    datos.isChild = data.isChild;
-                    datos.id_programa = data.id_programa;
-
-                    /** Se iteran los socket.id de los administradores para emitirles la siguiente información */
-                    admins.forEach((row) => {
-                        /** Se emiten las estadísticas del programa actual */
-                        io.to(row).emit('datos-entrada-texto', datos);
-                        /** Se emite el voto registrado por un convocado específico */
-                        io.to(row).emit('identificacion-entrada-texto', {
-                            identificacion: data.identificacion,
-                            voto: data.voto
-                        });
-                    });
-                }
-
+    socket.on('login',/** @param {Meeting<MeetingType>} data */(data) => {
+        console.log(43, data);
+        if (!data) { return error('Los datos de inicio de sesión no son válidos'); }
+        if (!data.id_reunion) { return error('Los datos de inicio de sesión no son válidos'); }
+        const meet = reuniones.get(data.id_reunion);
+        console.log(47, meet);
+        if (!meet.status) { return error(meet.message); }
+        if ('id_usuario' in data) {
+            const admin = meet.message.addAdmin(socket.id, data.id_usuario);
+            console.log(51, admin);
+            if (!admin.status) { return error(admin.message); }
+        } else if ('id_convocado_reunion' in data) {
+            const summoned = meet.message.addSummoned(socket.id, data.id_convocado_reunion);
+            console.log(55, summoned);
+            if (!summoned.status) { return error(summoned.message); }
+            socket.emit('login-emit', summoned.message);
+            meet.message.room(socket.id).forEach(socketId => {
+                socket.to(socketId).emit('login-emit', summoned.message);
             });
-
-        }
-
-    });
-
-    /** Socket que escucha cuando un convocado registró una respuesta para un programa con tipo: SELECCIÓN ÚNICA */
-    socket.on('emitir-seleccion-unica', (data) => {
-        /** Se obtiene un array con los socket.id de los administradores de la reunión */
-        const admins = reunion.getIdSocketAdmin();
-        if (admins) {
-            reunion.asignacionVotosSeleccion(data.id_programa, data.isChild, (response) => {
-                /** Se iteran los socket.id de los administradores para emitirles la siguiente información */
-                admins.forEach((row) => {
-                    /** Se emiten las estadísticas del programa actual */
-                    io.to(row).emit('datos-seleccion-unica', response);
-                    /** Se emite el voto registrado por un convocado específico */
-                    io.to(row).emit('identificacion-seleccion-unica', {
-                        identificacion: data.identificacion,
-                        voto: data.voto
-                    });
-                });
-            });
-        }
-    });
-
-    /** Socket que escucha cuando un convocado registró una respuesta para un programa con tipo: SELECCIÓN MÚLTIPLE */
-    socket.on('emitir-seleccion-multiple', (data) => {
-        /** Se obtiene un array con los socket.id de los administradores de la reunión */
-        const admins = reunion.getIdSocketAdmin();
-        if (admins) {
-            reunion.asignacionVotosSeleccion(data.id_programa, data.isChild, (response) => {
-                /** Se iteran los socket.id de los administradores para emitirles la siguiente información */
-                admins.forEach((row) => {
-                    /** Se emiten las estadísticas del programa actual */
-                    io.to(row).emit('datos-seleccion-multiple', response);
-                    /** Se emite el voto registrado por un convocado específico */
-                    io.to(row).emit('identificacion-seleccion-multiple', {
-                        identificacion: data.identificacion,
-                        voto: data.voto
-                    });
-                });
-            });
-        }
-    });
-
-    socket.on('get-cantidad-convocados', () => {
-        const admins = reunion.getIdSocketAdmin();
-        if (admins) {
-            /** Emite cantidad de convocados conectados */
-            admins.forEach((row) => io.to(row).emit('send-cantidad-convocados', { totalConvocados: reunion.listaConvocados.length }));
-        }
-    });
-
-    /** Emite a toda la sala la acción de cerrar reunión. Se ejecuta cuando se cancela/finaliza */
-    socket.on('terminar-reunion', (data) => io.in(room).emit('cerrar-reunion', data));
-
-    /** Escucha cuando un usuario se desconecta de la sala */
-    socket.on('disconnect', () => {
-        reunion.desconectarUsuario(socket.id, (user) => {
-            if (user) {
-                /** Emite a toda la sala la desconexión de un convocado */
-                io.in(room).emit('estado-usuario', { usuario: user, estado: false, flag: false });
-            }
-        });
+        } else { return error('Los datos de inicio de sesión no son válidos'); }
     });
 
 });
+
+module.exports = { reuniones };

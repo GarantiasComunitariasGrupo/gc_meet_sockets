@@ -33,7 +33,7 @@ io.on('connection', (socket) => {
 
         /** Valida parámetros requeridos */
         if ('url_firma' in req.query && 'id_convocado_reunion' in req.query) {
-            
+
             /** Busca al usuario en la sala */
             const user = salaEspera.getUserList(req.query.id_convocado_reunion);
 
@@ -44,12 +44,12 @@ io.on('connection', (socket) => {
 
             /** Respuesta para laravel */
             res.send({
-                'ok' : (user) ? true : false,
-                'response' : (user) ? user : 'No se encontró usuario'
+                'ok': (user) ? true : false,
+                'response': (user) ? user : 'No se encontró usuario'
             });
 
             salaEspera.sacarUsuarioSala('id_convocado_reunion', req.query.id_convocado_reunion);
-           
+
         }
     });
 

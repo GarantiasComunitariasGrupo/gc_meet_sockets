@@ -56,7 +56,15 @@ app.use(cors());
 module.exports = { io, app }
 
 require('./sockets/socket-sala-espera');
-require('./sockets/socket-reunion');
+const socketReunion = require('./sockets/socket-reunion');
+
+app.get('/getSummonedList', (req, res) => {
+	console.log(63, 'getSummonedList');
+	if (!req.query.id_reunion) { console.log('La reunión es incorrecta') }
+	const meeting = socketReunion.reuniones.get(req.query.id_reunion);
+	if (!meeting.status) { console.log('La reunión no existe') }
+	res.send(JSON.stringify({ status: true, message: meeting.message.getSummonList() }));
+});
 
 server.listen(process.env.PORT, (err) => {
 	(err) ? console.log(`Error ${err}`) : null;
