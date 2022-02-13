@@ -2,7 +2,7 @@ const { io, app } = require('../server');
 const { SalaEspera } = require('../classes/sala-espera');
 
 const salaEspera = new SalaEspera();
-const room = 'sala-espera-gcg';
+const room = 'sala-espera';
 
 io.on('connection', (socket) => {
 
@@ -54,3 +54,5 @@ io.on('connection', (socket) => {
     });
 
 });
+
+module.exports = { salaEspera };

@@ -24,8 +24,8 @@ if (process.env.NODE_ENV === 'development') {
 	options.cert = fs.readFileSync('C:\\wamp64\\bin\\apache\\apache2.4.41\\conf\\key\\certificate.crt');
 	options.key = fs.readFileSync('C:\\wamp64\\bin\\apache\\apache2.4.41\\conf\\key\\private.key');
 } else if (process.env.NODE_ENV === 'aospina') {
-	options.cert = fs.readFileSync('C:\\wamp64\\bin\\apache\\apache2.4.51\\conf\\key\\certificate.crt');
-	options.key = fs.readFileSync('C:\\wamp64\\bin\\apache\\apache2.4.51\\conf\\key\\private.key');
+	options.cert = fs.readFileSync('C:\\wamp64\\bin\\apache\\apache2.4.46\\conf\\key\\certificate.crt');
+	options.key = fs.readFileSync('C:\\wamp64\\bin\\apache\\apache2.4.46\\conf\\key\\private.key');
 }
 
 /**
@@ -37,6 +37,9 @@ const server = https.createServer(options, app);
  * Se conectan los sockets con el servidor de express
  */
 io.listen(server, { cors: { methods: ["GET", "POST", "OPTIONS"], origin: "*" } });
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 /**
  * Ruta de prueba
@@ -59,11 +62,26 @@ require('./sockets/socket-sala-espera');
 const socketReunion = require('./sockets/socket-reunion');
 
 app.get('/getSummonedList', (req, res) => {
-	console.log(63, 'getSummonedList');
-	if (!req.query.id_reunion) { console.log('La reunión es incorrecta') }
-	const meeting = socketReunion.reuniones.get(req.query.id_reunion);
-	if (!meeting.status) { console.log('La reunión no existe') }
-	res.send(JSON.stringify({ status: true, message: meeting.message.getSummonList() }));
+	try {
+		if (!req.query.id_reunion) { console.log(`/getSummonedList: Debe incluir el id de la reunion`); }
+		const meeting = socketReunion.reuniones.get(req.query.id_reunion);
+		if (!meeting.status) { console.log('La reunión no existe') }
+		res.send(JSON.stringify({ status: true, message: meeting.message.getSummonList() }));
+	} catch (error) {
+		res.send(JSON.stringify({ status: false, message: `/getSummonedList: ${error.message}` }));
+	}
+});
+
+app.post('/registerMeet', (req, res) => {
+	try {
+		if (!req.body.id_reunion) { return console.log(`/registerMeet: Debe incluir el id de la reunion`); }
+		const meet = socketReunion.reuniones.add(req.body.id_reunion);
+		if (!meet.status) { return console.log(meet.message); }
+		io.sockets.in('sala-espera').emit('register-emit', meet);
+		res.send(JSON.stringify({ status: true, message: 'Reunión iniciada correctamente' }));
+	} catch (error) {
+		res.send(JSON.stringify({ status: false, message: `/registerMeet: ${error.message}` }));
+	}
 });
 
 server.listen(process.env.PORT, (err) => {
