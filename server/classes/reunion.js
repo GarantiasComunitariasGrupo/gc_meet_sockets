@@ -193,7 +193,7 @@ class Reuniones {
         return { status: true, message: this.meetings[id] };
     }
 
-    remove() {
+    remove(id) {
         delete this.meetings[id];
     }
 

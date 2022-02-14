@@ -1,5 +1,6 @@
 const { io } = require('../server');
 const { Reuniones } = require('../classes/reunion');
+const axios = require('axios');
 
 // @ts-check
 
@@ -50,6 +51,9 @@ function logout(socket, data) {
         meet.message.room(socket.id).forEach(socketId => {
             socket.to(socketId).emit('logout-emit', summoned.message);
         });
+        axios.post(process.env.API + '/acceso-reunion/save-logout', { id_convocado_reunion: data.id_convocado_reunion })
+            .catch(() => { return hasError('logout: Error actualizando los datos de sesión'); })
+
     } else { return hasError('logout: Los datos de cierre de sesión no son válidos'); }
 }
 
@@ -132,15 +136,28 @@ io.on('connection', (socket) => {
     });
 
     socket.on('answerQuestion',/** @param {{ user: Meeting<'Convocado'>; type: string; id_programa: number; response: string; }} data */(data) => {
+        if (!data.user || !data.user.convocatoria || !data.user.convocatoria.length) { return hasError('answerQuestion: Los datos del convocado no son válidos'); }
         if (!data.type || !data.id_programa || !data.response) { return hasError('answerQuestion: Los datos del programa no son válidos'); }
-        if (!data.user || !data.user.id_convocado_reunion) { return hasError('answerQuestion: Los datos del convocado no son válidos'); }
         if (!data.user.id_reunion) { return hasError('answerQuestion: Los datos de la reunión no son válidos'); }
         const meet = reuniones.get(data.user.id_reunion);
         if (!meet.status) { return hasError(meet.message); }
         meet.message.adminRoom().forEach(socketId => {
-            socket.to(socketId).emit('answerQuestion-emit', { id_convocado_reunion: data.user.id_convocado_reunion, id_programa: data.id_programa, descripcion: data.response, tipo: data.type });
+            data.user.convocatoria.forEach(id_convocado_reunion => {
+                socket.to(socketId).emit('answerQuestion-emit', { id_convocado_reunion, id_programa: data.id_programa, descripcion: data.response, tipo: data.type });
+            })
         });
-    })
+    });
+
+    socket.on('changeMeetStatus', /** @param {{ id_reunion: number; status: string; }} data */(data) => {
+        if (!data.status || !data.id_reunion) { return hasError('changeMeetStatus: Los datos de la reunión no son válidos'); }
+        const meet = reuniones.get(data.id_reunion);
+        if (!meet.status) { return hasError(meet.message); }
+        socket.emit('changeMeetStatus-emit', data.status);
+        meet.message.room(socket.id).forEach(socketId => {
+            socket.to(socketId).emit('changeMeetStatus-emit', data.status);
+        });
+        reuniones.remove(data.id_reunion);
+    });
 
 });
 

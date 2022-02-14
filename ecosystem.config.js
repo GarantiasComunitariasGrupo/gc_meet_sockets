@@ -5,17 +5,17 @@ module.exports = {
     env: {
       "PORT": 3010,
       "NODE_ENV": "development",
-      "API": "http://192.168.0.10:8802/api"
+      "API": "http://192.168.0.10:8803/api"
     },
     env_aospina: {
       "PORT": 3010,
       "NODE_ENV": "aospina",
-      "API": "http://192.168.0.10:8802/api"
+      "API": "http://192.168.0.10:8803/api"
     },
     env_production: {
       "PORT": 3010,
       "NODE_ENV": "production",
-      "API": "http://192.168.0.10:8802/api"
+      "API": "http://192.168.0.10:8803/api"
     }
   }]
 };
