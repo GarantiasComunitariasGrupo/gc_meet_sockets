@@ -20,14 +20,24 @@ const reuniones = new Reuniones();
 
 const room = 'reuniones';
 
+/**
+ * 
+ * @param {string} error 
+ */
 function hasError(error) {
     console.log(error);
 }
 
+/**
+ * 
+ * @param {any} socket 
+ * @param {Meeting<MeetingType>} data 
+ * @returns 
+ */
 function logout(socket, data) {
     delete userList[socket.id];
-    if (!data) { return hasError('Los datos de cierre de sesión no son válidos'); }
-    if (!data.id_reunion) { return hasError('Los datos de cierre de sesión no son válidos'); }
+    if (!data) { return hasError('logout: Los datos de cierre de sesión no son válidos'); }
+    if (!data.id_reunion) { return hasError('logout: Los datos de cierre de sesión no son válidos'); }
     const meet = reuniones.get(data.id_reunion);
     if (!meet.status) { return hasError(meet.message); }
     if ('id_usuario' in data) {
@@ -37,10 +47,10 @@ function logout(socket, data) {
         const summoned = meet.message.removeSummoned(socket.id, data.id_convocado_reunion);
         if (!summoned.status) { return hasError(summoned.message); }
         socket.emit('logout-emit', summoned.message);
-        meet.message.room().forEach(socketId => {
+        meet.message.room(socket.id).forEach(socketId => {
             socket.to(socketId).emit('logout-emit', summoned.message);
         });
-    } else { return hasError('Los datos de cierre de sesión no son válidos'); }
+    } else { return hasError('logout: Los datos de cierre de sesión no son válidos'); }
 }
 
 userList = {};
@@ -51,9 +61,9 @@ io.on('connection', (socket) => {
 
     socket.join(room);
 
-    socket.on('register', (meetingId) => {
+    socket.on('register', /** @param {string} meetingId */(meetingId) => {
         try {
-            if (!meetingId) { return hasError('El id de la reunión no es válido'); }
+            if (!meetingId) { return hasError('register: El id de la reunión no es válido'); }
             const meet = reuniones.add(meetingId);
             if (!meet.status) { return hasError(meet.message); }
             socket.emit('register-emit', meet.message);
@@ -64,8 +74,8 @@ io.on('connection', (socket) => {
 
     socket.on('login',/** @param {Meeting<MeetingType>} data */(data) => {
         try {
-            if (!data) { return hasError('Los datos de inicio de sesión no son válidos'); }
-            if (!data.id_reunion) { return hasError('Los datos de inicio de sesión no son válidos'); }
+            if (!data) { return hasError('login: Los datos de inicio de sesión no son válidos'); }
+            if (!data.id_reunion) { return hasError('login: Los datos de inicio de sesión no son válidos'); }
             const meet = reuniones.get(data.id_reunion);
             if (!meet.status) { return hasError(meet.message); }
             if ('id_usuario' in data) {
@@ -75,10 +85,10 @@ io.on('connection', (socket) => {
                 const summoned = meet.message.addSummoned(socket.id, data.id_convocado_reunion);
                 if (!summoned.status) { return hasError(summoned.message); }
                 socket.emit('login-emit', summoned.message);
-                meet.message.room().forEach(socketId => {
+                meet.message.room(socket.id).forEach(socketId => {
                     socket.to(socketId).emit('login-emit', summoned.message);
                 });
-            } else { return hasError('Los datos de inicio de sesión no son válidos'); }
+            } else { return hasError('login: Los datos de inicio de sesión no son válidos'); }
             userList[socket.id] = data;
         } catch (error) {
             hasError(`login: ${error.message}`);
@@ -93,7 +103,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('disconnect',/** @param {Meeting<MeetingType>} data */() => {
+    socket.on('disconnect', () => {
         try {
             const data = userList[socket.id];
             if (!data) { return hasError('disconnect: Usuario no existe'); }
@@ -104,6 +114,22 @@ io.on('connection', (socket) => {
             hasError(`disconnect: ${error.message}`);
         }
     });
+
+    socket.on('advanceProgram', /** @param {{ id_reunion: number; id_programa: number; open: undefined | boolean; status: String; }} data */(data) => {
+        try {
+            if (!data.id_reunion) { return hasError('advanceProgram: Los datos de la reunión no son válidos'); }
+            if (!data.id_programa) { return hasError('advanceProgram: Los datos del programa no son válidos'); }
+            if (!data.status) { return hasError('advanceProgram: El estado del programa no es válido'); }
+            const meet = reuniones.get(data.id_reunion);
+            if (!meet.status) { return hasError(meet.message); }
+            socket.emit('advanceProgram-emit', data);
+            meet.message.room(socket.id).forEach(socketId => {
+                socket.to(socketId).emit('advanceProgram-emit', data);
+            });
+        } catch (error) {
+            hasError(`advanceProgram: ${error.message}`);
+        }
+    })
 
 });
 
