@@ -159,6 +159,16 @@ io.on('connection', (socket) => {
         reuniones.remove(data.id_reunion);
     });
 
+    socket.on('updateRoom', /** @param {number} id_reunion */(id_reunion) => {
+        if (!id_reunion) { return hasError('updateRoom: Los datos de la reunión no son válidos'); }
+        const meet = reuniones.get(id_reunion);
+        if (!meet.status) { return hasError(meet.message); }
+        socket.emit('updateRoom-emit');
+        meet.message.room(socket.id).forEach(socketId => {
+            socket.to(socketId).emit('updateRoom-emit');
+        });
+    })
+
 });
 
 module.exports = { reuniones };
