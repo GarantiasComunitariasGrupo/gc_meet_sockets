@@ -129,6 +129,17 @@ io.on('connection', (socket) => {
         } catch (error) {
             hasError(`advanceProgram: ${error.message}`);
         }
+    });
+
+    socket.on('answerQuestion',/** @param {{ user: Meeting<'Convocado'>; type: string; id_programa: number; response: string; }} data */(data) => {
+        if (!data.type || !data.id_programa || !data.response) { return hasError('answerQuestion: Los datos del programa no son válidos'); }
+        if (!data.user || !data.user.id_convocado_reunion) { return hasError('answerQuestion: Los datos del convocado no son válidos'); }
+        if (!data.user.id_reunion) { return hasError('answerQuestion: Los datos de la reunión no son válidos'); }
+        const meet = reuniones.get(data.user.id_reunion);
+        if (!meet.status) { return hasError(meet.message); }
+        meet.message.adminRoom().forEach(socketId => {
+            socket.to(socketId).emit('answerQuestion-emit', { id_convocado_reunion: data.user.id_convocado_reunion, id_programa: data.id_programa, descripcion: data.response, tipo: data.type });
+        });
     })
 
 });
