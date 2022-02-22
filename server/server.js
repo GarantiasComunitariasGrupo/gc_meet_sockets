@@ -60,6 +60,7 @@ module.exports = { io, app }
 
 require('./sockets/socket-sala-espera');
 const socketReunion = require('./sockets/socket-reunion');
+const socketActa = require('./sockets/socket-acta');
 
 app.get('/getSummonedList', (req, res) => {
 	try {
@@ -81,6 +82,17 @@ app.post('/registerMeet', (req, res) => {
 		res.send(JSON.stringify({ status: true, message: 'Reunión iniciada correctamente' }));
 	} catch (error) {
 		res.send(JSON.stringify({ status: false, message: `/registerMeet: ${error.message}` }));
+	}
+});
+
+app.get('/getSignList', (req, res) => {
+	try {
+		if (!req.query.id_reunion) { console.log(`/getSignList: Debe incluir el id de la reunion`); }
+		const meeting = socketActa.actaReuniones.get(req.query.id_reunion);
+		if (!meeting.status) { console.log('La reunión no existe') }
+		res.send(JSON.stringify({ status: true, message: meeting.message.getSignList() }));
+	} catch (error) {
+		res.send(JSON.stringify({ status: false, message: `/getSignList: ${error.message}` }));
 	}
 });
 
