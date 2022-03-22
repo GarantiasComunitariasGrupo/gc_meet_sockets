@@ -15,7 +15,7 @@ module.exports = {
     env_production: {
       "PORT": 3010,
       "NODE_ENV": "production",
-      "API": "http://192.168.2.106:8802/api"
+      "API": "gcmeet.grantiascomunitarias.com/request/api"
     }
   }]
 };
