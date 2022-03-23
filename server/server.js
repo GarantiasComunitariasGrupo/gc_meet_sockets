@@ -18,8 +18,8 @@ process.env.PORT = process.env.PORT || 3009;
 const options = {};
 
 // Certificados
-options.key = fs.readFileSync(proccess.env.CERTIFICATE.path + proccess.env.CERTIFICATE.key);
-options.cert = fs.readFileSync(proccess.env.CERTIFICATE.path + proccess.env.CERTIFICATE.cert);
+options.key = fs.readFileSync(process.env.CERTIFICATE.path + process.env.CERTIFICATE.key);
+options.cert = fs.readFileSync(process.env.CERTIFICATE.path + process.env.CERTIFICATE.cert);
 
 /**
  * Se crea el servidor
