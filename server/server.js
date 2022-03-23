@@ -17,21 +17,9 @@ process.env.PORT = process.env.PORT || 3009;
 
 const options = {};
 
-/**
- * Certificados para entorno local
- */
-if (process.env.NODE_ENV === 'development') {
-	options.cert = fs.readFileSync('C:\\wamp64\\bin\\apache\\apache2.4.41\\conf\\key\\certificate.crt');
-	options.key = fs.readFileSync('C:\\wamp64\\bin\\apache\\apache2.4.41\\conf\\key\\private.key');
-} else if (process.env.NODE_ENV === 'aospina') {
-	options.cert = fs.readFileSync('C:\\wamp64\\bin\\apache\\apache2.4.51\\conf\\key\\certificate.crt');
-	options.key = fs.readFileSync('C:\\wamp64\\bin\\apache\\apache2.4.51\\conf\\key\\private.key');
-} else {
-	// options.cert = fs.readFileSync('/home/garcom/certificado/certificate.crt');
-	// options.key = fs.readFileSync('/home/garcom/certificado/private.key');
-	options.cert = fs.readFileSync('/etc/ssl/certs/ssl-cert-snakeoil.pem');
-	options.key = fs.readFileSync('/etc/ssl/private/ssl-cert-snakeoil.key');
-}
+// Certificados
+options.key = fs.readFileSync(proccess.env.CERTIFICATE.path + proccess.env.CERTIFICATE.key);
+options.cert = fs.readFileSync(proccess.env.CERTIFICATE.path + proccess.env.CERTIFICATE.cert);
 
 /**
  * Se crea el servidor
